@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Transaction } from '../transaction';
-
+import { Transaction } from '../components/interface/transaction';
+import { TransactionService } from 'src/app/services/transaction.service';
+import { FormGroup, FormControl, Validators,FormBuilder} from '@angular/forms'; 
 @Component({
   selector: 'dashboard',
   templateUrl: './dashboard.component.html',
@@ -8,38 +9,50 @@ import { Transaction } from '../transaction';
 })
 export class DashboardComponent implements OnInit {
 
-  public transactions: Transaction[]
-  constructor() {
-    this.transactions = [
-      {
-        transactionId: "1",
-        transactionName: "Salary",
-        transactionCategory: "Salary",
-        transactionDate:  new Date(),
-        transactionType: "Income",
-        transactionAmount: 100000
-      },
-      {
-        transactionId: "2",
-        transactionName: "Eating out",
-        transactionCategory: "Food",
-        transactionDate:  new Date(),
-        transactionType: "Expense",
-        transactionAmount: 540
-      },
-      {
-        transactionId: "3",
-        transactionName: "Movies",
-        transactionCategory: "Entertainment",
-        transactionDate:  new Date(),
-        transactionType: "Expense",
-        transactionAmount: 1000
-      },
-    ]
+  public transactions: Transaction[] | undefined;
+  transactionForm!: FormGroup;
+  // transactionForm = new FormGroup({  
+  //  //category: new FormControl('Select Category')  
+  // });
+  constructor( 
+    private service:TransactionService,
+    private fb: FormBuilder,
+  ) { 
+    this.getAllTransactions();
    }
 
   ngOnInit(): void {
+
+    this.transactionForm = this.fb.group({
+      transactionName: [''],
+      transactionType: ['Expense'],
+      transactionDate: [''],
+      transactionCategory: ['Select Category'],
+      transactionAmount: []
+    })
   }
 
 
+  submit(transaction : any){  
+    
+    this.service.addTransaction(transaction).subscribe(response => {console.log(response);
+      this.getAllTransactions();
+      this.transactionForm.reset();
+     });
+  } 
+
+  getAllTransactions(){
+        
+    this.service.getAllTransactions().subscribe((data:Transaction[]) => {
+      this.transactions = data;
+      }); 
+  }
+
+  deleteTransaction(transactionId : string){
+    
+    this.service.deleteTransation(transactionId).subscribe(response => {console.log(response);
+      this.getAllTransactions();
+      
+     });
+     }
 }
